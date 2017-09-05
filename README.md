@@ -1,6 +1,10 @@
 # priceWeber1
-Simple login
-Updates to this Program will occur daily and will continue until Friday.
-Current needs: asynchronous tasks added to make excel write and sendmail happen at correct times. will use Await.
-make IP address the primary key of the DB. Checks for the IP
+Simple login<br>
+Updates to this Program will occur daily and will continue until Friday.<br>
+Current needs:<br>
+require SSL setting<br>
+redirect to HTTPS <br>
+require secure cookies<br>
+asynchronous tasks added to make excel write.<br>
+make IP address the primary key of the DB. More rigorous checks for the IP address and IP spoofing.<br>
 
