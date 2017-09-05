@@ -19,7 +19,7 @@ namespace priceWeber1.Controllers
         }
         [HttpPost]
 
-        public ActionResult Register(UserAccount account)
+        public async Task<ActionResult> Register(UserAccount account)
         {
             if (ModelState.IsValid)
             {
@@ -36,7 +36,7 @@ namespace priceWeber1.Controllers
                     db.userAccount.Add(account);
                     db.SaveChanges();
 
-                   SendAsyncMail(account.FirstName, account.LastName, account.Email);
+                   await SendAsyncMail(account.FirstName, account.LastName, account.Email);
                  
 
                 }
@@ -60,32 +60,35 @@ namespace priceWeber1.Controllers
         }
         public async static Task SendAsyncMail(string fname, string lname, string UserEmail)
         {
-            await Task.Delay(1800000);
-            var body = "<p>Email From: {0} ({1})</p><p>Message:</p><p>{2}</p>";
-            var message = new MailMessage();
-            message.To.Add(new MailAddress(UserEmail));  // replace with valid value 
-            message.From = new MailAddress("sender@outlook.com");  // replace with valid value
-            message.Subject = "Thanks for Signing Up!";
-            message.Body = string.Format(body, "PriceWeber", "priceWeber1@gmail.com", "Thanks for signing up. We appreciate your business.");
-            message.IsBodyHtml = true;
+            await Task.Delay(18);
+            //await Task.Delay(1800000);
+            //var body = "<p>Email From: {0} ({1})</p><p>Message:</p><p>{2}</p>";
+            //var message = new MailMessage();
+            //message.To.Add(new MailAddress(UserEmail));  // replace with valid value 
+            //message.From = new MailAddress("sender@outlook.com");  // replace with valid value
+            //message.Subject = "Thanks for Signing Up!";
+            //message.Body = string.Format(body, "PriceWeber", "priceWeber1@gmail.com", "Thanks for signing up. We appreciate your business.");
+            //message.IsBodyHtml = true;
 
-            using (var smtp = new SmtpClient())
-            {
-                var credential = new NetworkCredential
-                {
-                    UserName = "user@gmail.com",  // replace with valid value
-                    Password = "password"  // replace with valid value
-                };
-                smtp.Credentials = credential;
-                smtp.Host = " 	smtp.gmail.com";
-                smtp.Port = 587;
-                smtp.EnableSsl = true;
-                await smtp.SendMailAsync(message);
+            //using (var smtp = new SmtpClient())
+            //{
+            //    var credential = new NetworkCredential
+            //    {
+            //        UserName = "user@gmail.com",  // replace with valid value
+            //        Password = "password"  // replace with valid value
+            //    };
+            //    smtp.Credentials = credential;
+            //    smtp.Host = " 	smtp.gmail.com";
+            //    smtp.Port = 587;
+            //    smtp.EnableSsl = true;
+            //    await smtp.SendMailAsync(message);
 
-            }
         }
-        public void WriteExcel(string fname, string lname, string aemail, string aip)
-        { }
+      
+         public async static Task WriteExcel(string fname, string lname, string aemail, string aip)
+        {
+        await Task.Delay(18);
+        }
 
     }
 }
