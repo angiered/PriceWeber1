@@ -24,20 +24,17 @@ namespace priceWeber1.Controllers
             if (ModelState.IsValid)
             {
                 //use these for IP and date time
-                account.MyIPAddress = Request.UserHostAddress;
-                DateTime time = DateTime.Now;             // Use current time.
+                account.MyIPAddress = Request.UserHostAddress; //more ip checks are needed
+                DateTime time = DateTime.Now;                  // Use current time.
                 account.MyDateTime = time.ToString();
-
-
 
                 using (OurDBContext db = new OurDBContext())
                 {
-                   
                     db.userAccount.Add(account);
                     db.SaveChanges();
 
                    await SendAsyncMail(account.FirstName, account.LastName, account.Email);
-                 
+                   await WriteExcel(account.MyIPAddress, account.FirstName, account.LastName, account.Email);
 
                 }
                 ModelState.Clear();
@@ -60,7 +57,9 @@ namespace priceWeber1.Controllers
         }
         public async static Task SendAsyncMail(string fname, string lname, string UserEmail)
         {
-            await Task.Delay(18);
+            await Task.Delay(18); //this line is here to check the flow of code
+
+            //un comment this block to actually send an email. The code below needs tweaks to actually send.
             //await Task.Delay(1800000);
             //var body = "<p>Email From: {0} ({1})</p><p>Message:</p><p>{2}</p>";
             //var message = new MailMessage();
