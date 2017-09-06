@@ -12,10 +12,7 @@ using System.Data;
 using ClosedXML.Excel;
 using System.Configuration;
 using System.Data.SqlClient;
-
-
-
-
+using System.Web.Hosting;
 
 namespace priceWeber1.Controllers
 {
@@ -43,7 +40,7 @@ namespace priceWeber1.Controllers
                     db.SaveChanges();
 
                    await SendAsyncMail(account.FirstName, account.LastName, account.Email);
-                   await WriteExcel(time, account.MyIPAddress, account.FirstName, account.LastName, account.Email);
+                   WriteExcel(time, account.MyIPAddress, account.FirstName, account.LastName, account.Email);
 
                 }
                 ModelState.Clear();
@@ -92,57 +89,59 @@ namespace priceWeber1.Controllers
                 await smtp.SendMailAsync(message);
 
             }
-        }
-         public async static Task WriteExcel(DateTime MyDT,string fname, string lname, string aemail, string aip)
+        )
+            }
+         public async static void WriteExcel(DateTime MyDT,string fname, string lname, string aemail, string aip)
         {
             //check day of week
+            //********very inefficient way of doing this.. I would use a windows scheduler instead  ************
             String MyDayofWeek = MyDT.Day.ToString("ddd");
             if (MyDayofWeek != "Fri")
             {
-            
-                await Task.Delay((int)MyDT.Subtract(DateTime.Now).TotalMilliseconds);
+               //need to use Cancellationtoken
+               
                 ExportExcel();
             }
-            //put the writing task here
-           
+            else { ExportExcel(); }
+       
            
         }
 
-        protected void ExportExcel(object sender, EventArgs e)
+        public async static void ExportExcel()//object sender, EventArgs e)
         {
-            string constr = ConfigurationManager.ConnectionStrings["constr"].ConnectionString;
-            using (SqlConnection con = new SqlConnection(constr))
-            {
-                using (SqlCommand cmd = new SqlCommand("SELECT * FROM Customers"))
-                {
-                    using (SqlDataAdapter sda = new SqlDataAdapter())
-                    {
-                        cmd.Connection = con;
-                        sda.SelectCommand = cmd;
-                        using (DataTable dt = new DataTable())
-                        {
-                            sda.Fill(dt);
-                            using (XLWorkbook wb = new XLWorkbook())
-                            {
-                                wb.Worksheets.Add(dt, "Customers");
+            //string constr = ConfigurationManager.ConnectionStrings["constr"].ConnectionString;
+            //using (SqlConnection con = new SqlConnection(constr))
+            //{
+            //    using (SqlCommand cmd = new SqlCommand("SELECT * FROM Customers"))
+            //    {
+            //        using (SqlDataAdapter sda = new SqlDataAdapter())
+            //        {
+            //            cmd.Connection = con;
+            //            sda.SelectCommand = cmd;
+            //            using (DataTable dt = new DataTable())
+            //            {
+            //                sda.Fill(dt);
+            //                using (XLWorkbook wb = new XLWorkbook())
+            //                {
+            //                    wb.Worksheets.Add(dt, "Customers");
 
-                                Response.Clear();
-                                Response.Buffer = true;
-                                Response.Charset = "";
-                                Response.ContentType = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
-                                Response.AddHeader("content-disposition", "attachment;filename=SqlExport.xlsx");
-                                using (MemoryStream MyMemoryStream = new MemoryStream())
-                                {
-                                    wb.SaveAs(MyMemoryStream);
-                                    MyMemoryStream.WriteTo(Response.OutputStream);
-                                    Response.Flush();
-                                    Response.End();
-                                }
-                            }
-                        }
-                    }
-                }
-            }
+            //                    Response.Clear();
+            //                    Response.Buffer = true;
+            //                    Response.Charset = "";
+            //                    Response.ContentType = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
+            //                    Response.AddHeader("content-disposition", "attachment;filename=SqlExport.xlsx");
+            //                    using (MemoryStream MyMemoryStream = new MemoryStream())
+            //                    {
+            //                        wb.SaveAs(MyMemoryStream);
+            //                        MyMemoryStream.WriteTo(Response.OutputStream);
+            //                        Response.Flush();
+            //                        Response.End();
+            //                    }
+            //                }
+            //            }
+            //        }
+            //    }
+            //}
         }
 
 
