@@ -6,6 +6,15 @@ using System.Web.Mvc;
 using priceWeber1.Models;
 using System.Net.Mail;
 using System.Threading.Tasks;
+using System.Net;
+using System.IO;
+using System.Data;
+using ClosedXML.Excel;
+using System.Configuration;
+using System.Data.SqlClient;
+
+
+
 
 
 namespace priceWeber1.Controllers
@@ -34,7 +43,7 @@ namespace priceWeber1.Controllers
                     db.SaveChanges();
 
                    await SendAsyncMail(account.FirstName, account.LastName, account.Email);
-                   await WriteExcel(account.MyIPAddress, account.FirstName, account.LastName, account.Email);
+                   await WriteExcel(time, account.MyIPAddress, account.FirstName, account.LastName, account.Email);
 
                 }
                 ModelState.Clear();
@@ -59,35 +68,83 @@ namespace priceWeber1.Controllers
         {
             await Task.Delay(18); //this line is here to check the flow of code
 
-            //un comment this block to actually send an email. The code below needs tweaks to actually send.
-            //await Task.Delay(1800000);
-            //var body = "<p>Email From: {0} ({1})</p><p>Message:</p><p>{2}</p>";
-            //var message = new MailMessage();
-            //message.To.Add(new MailAddress(UserEmail));  // replace with valid value 
-            //message.From = new MailAddress("sender@outlook.com");  // replace with valid value
-            //message.Subject = "Thanks for Signing Up!";
-            //message.Body = string.Format(body, "PriceWeber", "priceWeber1@gmail.com", "Thanks for signing up. We appreciate your business.");
-            //message.IsBodyHtml = true;
+            //The code below needs tweaks to actually send.---> username/password
+            await Task.Delay(1800000);
+            var body = "<p>Email From: {0} ({1})</p><p>Message:</p><p>{2}</p>";
+            var message = new MailMessage();
+            message.To.Add(new MailAddress(UserEmail));  // replace with valid value 
+            message.From = new MailAddress("sender@outlook.com");  // replace with valid value
+            message.Subject = "Thanks for Signing Up!";
+            message.Body = string.Format(body, "PriceWeber", "priceWeber1@gmail.com", "Thanks for signing up. We appreciate your business.");
+            message.IsBodyHtml = true;
 
-            //using (var smtp = new SmtpClient())
-            //{
-            //    var credential = new NetworkCredential
-            //    {
-            //        UserName = "user@gmail.com",  // replace with valid value
-            //        Password = "password"  // replace with valid value
-            //    };
-            //    smtp.Credentials = credential;
-            //    smtp.Host = " 	smtp.gmail.com";
-            //    smtp.Port = 587;
-            //    smtp.EnableSsl = true;
-            //    await smtp.SendMailAsync(message);
+            using (var smtp = new SmtpClient())
+            {
+                var credential = new NetworkCredential
+                {
+                    UserName = "user@gmail.com",  // replace with valid value
+                    Password = "password"  // replace with valid value
+                };
+                smtp.Credentials = credential;
+                smtp.Host = " 	smtp.gmail.com";
+                smtp.Port = 587;
+                smtp.EnableSsl = true;
+                await smtp.SendMailAsync(message);
 
+            }
         }
-      
-         public async static Task WriteExcel(string fname, string lname, string aemail, string aip)
+         public async static Task WriteExcel(DateTime MyDT,string fname, string lname, string aemail, string aip)
         {
-        await Task.Delay(18);
+            //check day of week
+            String MyDayofWeek = MyDT.Day.ToString("ddd");
+            if (MyDayofWeek != "Fri")
+            {
+            
+                await Task.Delay((int)MyDT.Subtract(DateTime.Now).TotalMilliseconds);
+                ExportExcel();
+            }
+            //put the writing task here
+           
+           
         }
+
+        protected void ExportExcel(object sender, EventArgs e)
+        {
+            string constr = ConfigurationManager.ConnectionStrings["constr"].ConnectionString;
+            using (SqlConnection con = new SqlConnection(constr))
+            {
+                using (SqlCommand cmd = new SqlCommand("SELECT * FROM Customers"))
+                {
+                    using (SqlDataAdapter sda = new SqlDataAdapter())
+                    {
+                        cmd.Connection = con;
+                        sda.SelectCommand = cmd;
+                        using (DataTable dt = new DataTable())
+                        {
+                            sda.Fill(dt);
+                            using (XLWorkbook wb = new XLWorkbook())
+                            {
+                                wb.Worksheets.Add(dt, "Customers");
+
+                                Response.Clear();
+                                Response.Buffer = true;
+                                Response.Charset = "";
+                                Response.ContentType = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
+                                Response.AddHeader("content-disposition", "attachment;filename=SqlExport.xlsx");
+                                using (MemoryStream MyMemoryStream = new MemoryStream())
+                                {
+                                    wb.SaveAs(MyMemoryStream);
+                                    MyMemoryStream.WriteTo(Response.OutputStream);
+                                    Response.Flush();
+                                    Response.End();
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
 
     }
 }
